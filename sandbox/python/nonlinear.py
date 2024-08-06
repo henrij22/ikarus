@@ -30,18 +30,17 @@ def main():
     )
 
     flatBasis = basisLagrange1.flat()
-    d = np.zeros(len(flatBasis))
+    #d = np.zeros(len(flatBasis))
 
     lambdaLoad = iks.Scalar(1.0)
 
     fes = []
 
-    # mat = iks.materials.StVenantKirchhoff(E=1000, nu=0.0)
+    # mat = iks.materials.StVenantKirchhoff(E=1000, nu=0.3)
     # matPS = mat.asPlaneStrain()
 
-    mat = iks.materials.NeoHooke(E=1000, nu=0.0)
+    mat = iks.materials.NeoHooke(E=1000, nu=0.3)
     matPS = mat.asPlaneStrain()
-
 
     nonLinEalstic = iks.finite_elements.nonLinearElastic(matPS)
     for e in grid.elements:
@@ -69,10 +68,15 @@ def main():
 
     strains = [-0.375, 0, 0]
     C = matPS.tangentModuli("greenLagrangian", strains)
+    S = matPS.stresses("greenLagrangian", strains)
 
     prittyprint(C)
+    prittyprint(S)
 
 
+    # strains = [-0.375, 0, 0, 0, 0, 0]
+    # C = mat.tangentModuli("greenLagrangian", strains)
+    # prittyprint(C)
 
     # f = flatBasis.asFunction(d)
 

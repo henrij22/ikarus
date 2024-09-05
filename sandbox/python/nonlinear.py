@@ -35,40 +35,51 @@ def main():
     lambdaLoad = iks.Scalar(1.0)
 
     fes = []
-# 
-    # mat = iks.materials.StVenantKirchhoff(E=1000, nu=0.0)
-    # matPS = mat.asPlaneStrain()
 
-    mat = iks.materials.NeoHooke(E=1000, nu=0.0)
+    # Kurzer EAS Exkurs
+    mat = iks.materials.LinearElasticity(E=1000, nu=0.0)
     matPS = mat.asPlaneStrain()
 
+    linElastic = iks.finite_elements.linearElastic(matPS)
+    easF = iks.finite_elements.eas(4)
 
-    nonLinEalstic = iks.finite_elements.nonLinearElastic(matPS)
     for e in grid.elements:
-        fes.append(iks.finite_elements.makeFE(basisLagrange1, nonLinEalstic))
+        fes.append(iks.finite_elements.makeFE(basisLagrange1, linElastic, easF))
         fes[-1].bind(e)
+
+    # # mat = iks.materials.StVenantKirchhoff(E=1000, nu=0.0)
+    # # matPS = mat.asPlaneStrain()
+
+    # mat = iks.materials.NeoHooke(E=1000, nu=0.0)
+    # matPS = mat.asPlaneStrain()
+
+
+    # nonLinEalstic = iks.finite_elements.nonLinearElastic(matPS)
+    # for e in grid.elements:
+    #     fes.append(iks.finite_elements.makeFE(basisLagrange1, nonLinEalstic))
+    #     fes[-1].bind(e)
 
     req = fes[0].createRequirement()
     req.insertParameter(lambdaLoad)
-    # req.insertGlobalSolution(d)
-
-    stiffness = np.zeros((8, 8))
-    #fes[0].calculateMatrix(req, iks.MatrixAffordance.stiffness, stiffness)
-
-    # prittyprint(stiffness)
-
-    # IBB Ordering??
-    d = np.array([1, 0, 0, 0, 0, 0, 1, 0], dtype=float)
-    # d =np.zeros(8)
     req.insertGlobalSolution(d)
 
+    stiffness = np.zeros((8, 8))
     fes[0].calculateMatrix(req, iks.MatrixAffordance.stiffness, stiffness)
-    prittyprint(stiffness)
-    print(np.linalg.norm(stiffness))
 
-    forces = np.zeros(8)
-    fes[0].calculateVector(req, iks.VectorAffordance.forces, forces)
-    prittyprint(forces)
+    prittyprint(stiffness)
+
+    # # IBB Ordering??
+    # d = np.array([1, 0, 0, 0, 0, 0, 1, 0], dtype=float)
+    # # d =np.zeros(8)
+    # req.insertGlobalSolution(d)
+
+    # fes[0].calculateMatrix(req, iks.MatrixAffordance.stiffness, stiffness)
+    # prittyprint(stiffness)
+    # print(np.linalg.norm(stiffness))
+
+    # forces = np.zeros(8)
+    # fes[0].calculateVector(req, iks.VectorAffordance.forces, forces)
+    # prittyprint(forces)
 
 
     # strains = [-0.375, 0, 0]

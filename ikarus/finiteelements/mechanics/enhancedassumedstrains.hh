@@ -255,16 +255,23 @@ private:
     DMat.setZero();
     LMat.setZero(enhancedStrainSize, underlying().localView().size());
     for (const auto& [gpIndex, gp] : strainFunction.viewOverIntegrationPoints()) {
-      const auto M            = easFunction.calcM(gp.position());
-      const auto CEval        = C(gpIndex);
+      const auto M = easFunction.calcM(gp.position());
+
+      const auto CEval = C(gpIndex);
+      std::cout << "C\n" << CEval << std::endl;
+      std::cout << "M\n" << M << std::endl;
+
       const double detJTimesW = geo.integrationElement(gp.position()) * gp.weight();
       DMat += M.transpose() * CEval * M * detJTimesW;
       for (size_t i = 0U; i < numberOfNodes; ++i) {
         const size_t I = Traits::worlddim * i;
         const auto Bi  = strainFunction.evaluateDerivative(gpIndex, wrt(coeff(i)), on(gridElement));
         LMat.template block<enhancedStrainSize, Traits::worlddim>(0, I) += M.transpose() * CEval * Bi * detJTimesW;
+        std::cout << "Bi\n" << Bi << std::endl;
       }
     }
+
+    std::cout << "L\n" << LMat << "\nD\n" << DMat << std::endl;
   }
 };
 

@@ -35,7 +35,7 @@ def main():
     lambdaLoad = iks.Scalar(1.0)
 
     fes = []
-
+# 
     # mat = iks.materials.StVenantKirchhoff(E=1000, nu=0.0)
     # matPS = mat.asPlaneStrain()
 
@@ -66,11 +66,15 @@ def main():
     prittyprint(stiffness)
     print(np.linalg.norm(stiffness))
 
+    forces = np.zeros(8)
+    fes[0].calculateVector(req, iks.VectorAffordance.forces, forces)
+    prittyprint(forces)
 
-    strains = [-0.375, 0, 0]
-    C = matPS.tangentModuli("greenLagrangian", strains)
 
-    prittyprint(C)
+    # strains = [-0.375, 0, 0]
+    # C = matPS.tangentModuli("greenLagrangian", strains)
+
+    # prittyprint(C)
 
 
 

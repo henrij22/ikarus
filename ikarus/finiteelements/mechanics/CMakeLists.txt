@@ -7,6 +7,7 @@ add_subdirectory(materials)
 install(
   FILES nonlinearelastic.hh
         enhancedassumedstrains.hh
+        nonlinearenhancedassumedstrains.hh
         linearelastic.hh
         materials.hh
         kirchhoffloveshell.hh

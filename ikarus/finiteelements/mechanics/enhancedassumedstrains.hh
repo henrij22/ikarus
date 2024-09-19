@@ -252,8 +252,6 @@ protected:
   inline ScalarType calculateScalarImpl(
       const Requirement& par, ScalarAffordance affordance,
       const std::optional<std::reference_wrapper<const Eigen::VectorX<ScalarType>>>& dx = std::nullopt) const {
-    if (affordance != ScalarAffordance::mechanicalPotentialEnergy)
-      DUNE_THROW(Dune::NotImplemented, "ScalarAffordance not implemented: " + toString(affordance));
     easApplicabilityCheck();
     if (isDisplacementBased())
       return 0.0;

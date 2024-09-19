@@ -3,6 +3,7 @@
 
 #include <config.h>
 
+#include "checkfebyautodiff.hh"
 #include "testcommon.hh"
 
 #include <dune/common/test/testsuite.hh>

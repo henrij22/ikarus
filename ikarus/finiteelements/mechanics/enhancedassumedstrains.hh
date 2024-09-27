@@ -275,16 +275,9 @@ protected:
     const auto& numberOfNodes = underlying().numberOfNodes();
     const auto C              = underlying().materialTangentFunction(par);
 
-    decltype(auto) LMat = [this]() -> decltype(auto) {
-      if constexpr (std::is_same_v<ScalarType, double>)
-        return [this]() -> Eigen::MatrixXd& { return L_; }();
-      else
-        return Eigen::MatrixX<ScalarType>{};
-    }();
-
     auto calculateForceContribution = [&]<typename EAST>(const EAST& easFunction) {
       typename EAST::DType D;
-      calculateDAndLMatrix(easFunction, par, D, LMat, dx);
+      calculateDAndLMatrix(easFunction, par, D, L_);
 
       const auto disp    = Dune::viewAsFlatEigenVector(uFunction.coefficientsRef());
       const auto geo     = underlying().localView().element().geometry();
@@ -299,7 +292,7 @@ protected:
           force.template segment<Traits::worlddim>(Traits::worlddim * i) += bopI.transpose() * stresses * intElement;
         }
       }
-      force -= LMat.transpose() * D.inverse() * Rtilde;
+      force -= L_.transpose() * D.inverse() * Rtilde;
     };
     easVariant_(calculateForceContribution);
   }

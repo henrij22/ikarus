@@ -238,7 +238,6 @@ public:
       const auto uFunction = displacementFunction(req);
       const auto H         = uFunction.evaluateDerivative(local, Dune::wrt(spatialAll), Dune::on(gridElement));
       const auto E         = (0.5 * (H.transpose() + H + H.transpose() * H)).eval();
-
       return RTWrapper{mat_.template stresses<StrainTags::greenLagrangian>(toVoigt(E))};
     }
   }

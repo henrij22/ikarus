@@ -9,6 +9,7 @@
 #include <dune/functions/functionspacebases/subspacebasis.hh>
 #include <dune/grid/yaspgrid.hh>
 
+#include "ikarus/finiteelements/mechanics/enhancedassumedstrains.hh"
 #include <ikarus/assembler/simpleassemblers.hh>
 #include <ikarus/controlroutines/loadcontrol.hh>
 #include "ikarus/finiteelements/mechanics/materials/vanishingstress.hh"
@@ -59,7 +60,7 @@ int main(int argc, char** argv) {
   auto load = [](auto& coords, auto& lambda) { return Eigen::Vector2d{0, -0.1 * lambda}; };
 
   auto preFE = Ikarus::nonLinearElastic(psMat);
-  auto sk    = Ikarus::skills(preFE, Ikarus::neumannBoundaryLoad(&neumannBoundary, load));
+  auto sk    = Ikarus::skills(preFE, eas(4), Ikarus::neumannBoundaryLoad(&neumannBoundary, load));
 
   using FEType = decltype(makeFE(basis, sk));
 
@@ -82,8 +83,10 @@ int main(int argc, char** argv) {
   auto req = typename FEType::Requirement();
   req.insertGlobalSolution(d).insertParameter(lambda);
 
+  auto affo = AffordanceCollection(ScalarAffordance::noAffordance, VectorAffordance::forces, MatrixAffordance::stiffness);
   auto sparseAssembler = makeSparseFlatAssembler(fes, dirichletValues);
-  sparseAssembler->bind(req, Ikarus::AffordanceCollections::elastoStatics, Ikarus::DBCOption::Full);
+  
+  sparseAssembler->bind(req, affo, Ikarus::DBCOption::Full);
 
   auto linSolver = LinearSolver{SolverTypeTag::sd_SparseLU};
   auto config    = NewtonRaphsonConfig<decltype(linSolver)>{
@@ -95,7 +98,7 @@ int main(int argc, char** argv) {
   // auto info = nonLinSolver->solve();
 
   auto lc = LoadControl{
-      nonLinSolver, 1, {0, 20}
+      nonLinSolver, 10, {0, 20}
   };
 
   auto nonLinearSolverObserver = std::make_shared<NonLinearSolverLogger>();

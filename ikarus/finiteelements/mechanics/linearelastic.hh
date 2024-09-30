@@ -154,11 +154,15 @@ public:
     return [&]([[maybe_unused]] auto gp) { return materialTangent(); };
   }
 
+  template <typename ScalarType, int strainDim, bool voigt = true>
+  auto getStress(const Eigen::Vector<ScalarType, strainDim>& strain) const {
+    return (materialTangent() * strain).eval();
+  }
+
   const Geometry& geometry() const { return *geo_; }
   [[nodiscard]] size_t numberOfNodes() const { return numberOfNodes_; }
   [[nodiscard]] int order() const { return order_; }
 
-public:
   /**
    * \brief Calculates a requested result at a specific local position.
    *

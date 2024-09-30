@@ -1,0 +1,88 @@
+# SPDX-FileCopyrightText: 2021-2024 The Ikarus Developers mueller@ibb.uni-stuttgart.de
+# SPDX-License-Identifier: CC0-1.0
+
+name: Benchmark 
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/ghpages.yml"
+      - ".github/workflows/createDockerContainer.yml"
+      - "**.md"
+
+  pull_request:
+    types: [opened]
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/ghpages.yml"
+      - ".github/workflows/createDockerContainer.yml"
+      - "**.md"
+  workflow_dispatch:
+
+jobs:
+  Build:
+    name: ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Clang-16-Debug",
+              container: "ikarusproject/ikarus-dev-clang:latest",
+              config: Debug,
+              compilerC: clang-16,
+              compilerCxx: clang++-16,
+              lib: "-stdlib=libc++",
+              testRegex: "cpp_quick",
+            }
+          - {
+              name: "Clang-16-Release",
+              container: "ikarusproject/ikarus-dev-clang:latest",
+              config: Release,
+              compilerC: clang-16,
+              compilerCxx: clang++-16,
+              lib: "-stdlib=libc++",
+              testRegex: "cpp",
+            }
+          - {
+              name: "Gcc-12-Debug",
+              container: "ikarusproject/ikarus-dev-gcc:latest",
+              config: Debug,
+              compilerC: gcc-12,
+              compilerCxx: g++-12,
+              lib: "",
+              testRegex: "cpp_quick",
+            }
+          - {
+              name: "Gcc-12-Release",
+              container: "ikarusproject/ikarus-dev-gcc:latest",
+              config: Release,
+              compilerC: gcc-12,
+              compilerCxx: g++-12,
+              lib: "",
+              testRegex: "cpp",
+            }
+    container:
+      image: ${{ matrix.config.container }}
+      options: --memory-swap="20g" --memory="20g" --cpus="2" --user root
+    env:
+      IKARUS_PYTHON_TEST_BUILD_TYPE_OVERRIDE: ${{ matrix.config.config }} 
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: "repo"
+      - name: Build
+        working-directory: ./repo
+        run: |
+          mkdir cmake-build-${{ matrix.config.config }}
+          cd cmake-build-${{ matrix.config.config }}
+          cmake ../  -DCMAKE_BUILD_TYPE=${{ matrix.config.config }} -GNinja -DCMAKE_C_COMPILER=${{ matrix.config.compilerC }} -DCMAKE_CXX_COMPILER=${{ matrix.config.compilerCxx }}
+          cmake --build . --parallel 2 --target ikarus
+          cmake --build . --parallel 2 --target Benchmark
+      - name: Run all examples
+        working-directory: ./repo/cmake-build-${{ matrix.config.config }}/sandbox/benchmarks
+        run: |
+          echo "Testing example: iks001" && ./benchmark;

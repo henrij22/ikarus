@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 
 add_executable("Benchmark" benchmark.cpp)
-set_target_properties("Benchmark" PROPERTIES CXX_STANDARD 20 OUTPUT_NAME "Ikarus")
+set_target_properties("Benchmark" PROPERTIES CXX_STANDARD 20 OUTPUT_NAME "benchmark")
 add_dune_pythonlibs_flags("Benchmark")
 target_compile_options(
   "Benchmark" PUBLIC -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-variable
